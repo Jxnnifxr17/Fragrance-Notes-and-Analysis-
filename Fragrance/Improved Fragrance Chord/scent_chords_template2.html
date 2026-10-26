@@ -1,0 +1,39 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Scent chords · Which notes go together</title>
+<style>
+:root{--bg:#f7f3f1;--fg:#2a2326;--mut:#6f646a;--card:#fff;--line:#e3dbd8;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1b1719;--fg:#efe8e6;--mut:#a89da2;--card:#262123;--line:#3a3235}}
+:root[data-theme="dark"]{--bg:#1b1719;--fg:#efe8e6;--mut:#a89da2;--card:#262123;--line:#3a3235}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 Georgia,"Times New Roman",serif}
+main{max-width:980px;margin:0 auto;padding:24px 16px 48px}h1{font-size:1.7rem;margin:0 0 8px;line-height:1.2}p{margin:0 0 12px;color:var(--mut)}
+.bar{display:flex;gap:12px;align-items:center;margin:14px 0;font:14px system-ui,sans-serif;color:var(--mut)}select{font:inherit;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg)}
+.wrap{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px}@media(max-width:760px){.wrap{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;font:14px/1.5 system-ui,sans-serif}svg{width:100%;height:auto;display:block}
+text{fill:var(--fg);font:10.5px system-ui,sans-serif}.arc,.rib{cursor:pointer}h2{font:600 1.05rem Georgia,serif;margin:0 0 4px}
+.row{display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-bottom:1px solid var(--line)}.row b{font-weight:600}.chip{display:inline-flex;align-items:center;gap:6px;margin:3px 10px 3px 0}.chip i{width:11px;height:11px;border-radius:3px;display:inline-block}
+small{color:var(--mut)}
+</style></head><body><main>
+<h1>Which notes share a bottle?</h1>
+<p>Built from __N__ perfumes. Each arc is one of the 80 most common notes, colored by scent family. A ribbon joins two notes that appear together more often than chance predicts (lift), and the thicker the ribbon, the more perfumes they share. Click an arc to rank its partners.</p>
+<div class="bar"><label>Connections <select id="k"><option>100</option><option selected>250</option><option>500</option><option>900</option></select></label><span id="cnt"></span></div>
+<div class="wrap"><div class="card"><svg id="s" viewBox="-380 -380 760 760" role="img" aria-label="Chord diagram of fragrance notes"></svg></div><div class="card" id="side"></div></div>
+<p style="margin-top:16px"><small>This shows how perfumes are described on Fragrantica, not how they smell. Note lists are written by brands and fans, and popular perfumes are overrepresented. Family groupings are my own editorial calls.</small></p>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script>
+const D=__DATA__,C=['#e0b400','#d9558a','#e8793a','#5aa65a','#c4483c','#8a6a4a','#b5651d','#8e7fb8','#5f7f86'],n=D.n.length;
+const svg=d3.select('#s'),side=d3.select('#side');let sel=null;
+const P=(a,b)=>D.p.filter(p=>p[0]==a||p[1]==a).sort((x,y)=>y[3]-x[3]);
+function home(){side.html('<h2>Scent families</h2><p>Colors group notes by family. Click any arc to see what it is paired with most.</p>'+D.F.map((f,i)=>'<span class="chip"><i style="background:'+C[i]+'"></i>'+f+'</span>').join(''))}
+function info(i){const [nm,f,c,p]=D.n[i],L=P(i).slice(0,12);
+side.html('<h2>'+nm+'</h2><p style="margin-bottom:6px">'+D.F[f]+' · in '+c.toLocaleString()+' perfumes ('+(100*c/D.N).toFixed(0)+'%)<br>Usually listed: top '+p[0]+'% · heart '+p[1]+'% · base '+p[2]+'%</p>'+L.map(p=>{const j=p[0]==i?p[1]:p[0];return '<div class="row"><span><i class="chip" style="margin:0 6px 0 0"><i style="background:'+C[D.n[j][1]]+'"></i></i><b>'+D.n[j][0]+'</b></span><span>'+p[2].toLocaleString()+' · '+(100*p[2]/c).toFixed(0)+'% · '+p[3].toFixed(1)+'x</span></div>'}).join('')+'<p style="margin-top:8px"><small>Shared perfumes · share of '+nm+' perfumes · lift (x times more often than chance)</small></p>')}
+function draw(){const K=+d3.select('#k').property('value'),ps=D.p.slice(0,K),act=[...new Set(ps.flatMap(p=>[p[0],p[1]]))].sort((a,b)=>a-b),pos=new Map(act.map((v,i)=>[v,i]));
+const m=act.map(()=>act.map(()=>0));ps.forEach(p=>{m[pos.get(p[0])][pos.get(p[1])]=m[pos.get(p[1])][pos.get(p[0])]=p[2]});
+d3.select('#cnt').text(act.length+' notes, '+K+' pairings');svg.selectAll('*').remove();
+const ch=d3.chord().padAngle(.025).sortSubgroups(d3.descending)(m),R=290,arc=d3.arc().innerRadius(R).outerRadius(R+12),rb=d3.ribbon().radius(R);
+const col=i=>C[D.n[act[i]][1]],on=(i)=>sel===null||act[i]===sel;
+svg.append('g').selectAll('path').data(ch).join('path').attr('class','rib').attr('d',rb).attr('fill',d=>col(d.source.index)).attr('opacity',d=>sel===null?.55:(act[d.source.index]===sel||act[d.target.index]===sel?.8:.04)).on('click',()=>{sel=null;home();draw()}).append('title').text(d=>{const a=act[d.source.index],b=act[d.target.index],q=D.p.find(p=>(p[0]==a&&p[1]==b)||(p[0]==b&&p[1]==a));return D.n[a][0]+' + '+D.n[b][0]+': '+d.source.value+' perfumes, '+q[3].toFixed(1)+'x more often than chance'});
+const g=svg.append('g').selectAll('g').data(ch.groups).join('g');
+g.append('path').attr('class','arc').attr('d',arc).attr('fill',d=>col(d.index)).attr('opacity',d=>on(d.index)?1:.3).on('click',(e,d)=>{sel=sel===act[d.index]?null:act[d.index];sel===null?home():info(sel);draw()});
+g.append('text').attr('transform',d=>{const a=(d.startAngle+d.endAngle)/2;return 'rotate('+(a*180/Math.PI-90)+') translate('+(R+18)+') '+(a>Math.PI?'rotate(180)':'')}).attr('text-anchor',d=>(d.startAngle+d.endAngle)/2>Math.PI?'end':'start').attr('dy','.32em').attr('opacity',d=>on(d.index)?1:.35).text(d=>D.n[act[d.index]][0])}
+d3.select('#k').on('change',draw);home();draw();
+</script></body></html>
