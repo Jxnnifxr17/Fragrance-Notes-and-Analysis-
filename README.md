@@ -95,5 +95,4 @@ Models use a single 80/20 split without cross-validation.
 
 The data shows how perfumes are described on Fragrantica, not how they smell. Popular perfumes are overrepresented.
 
-
-
+Original Dataset: Kaggle: https://www.kaggle.com/datasets/olgagmiufana1/fragrantica-com-fragrance-dataset
