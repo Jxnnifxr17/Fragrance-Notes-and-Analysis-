@@ -67,6 +67,8 @@ The page can show 100, 250, 500 or 900 connections.
 
 Lift compares how often two notes appear together with what you would expect if they were independent: lift(a, b) = P(a, b) / (P(a) x P(b)). A lift above 1 means the pair is used together more than chance, and below 1 means they tend to avoid each other.
 
+<img width="948" height="556" alt="Screenshot 2026-10-26 at 3 09 17 PM" src="https://github.com/user-attachments/assets/9311d12c-49c2-4b9f-9cd6-d2e2005a77a7" />
+
 ## Key findings. 
 Style is learnable. A model using only notes and accords predicts the gender label with 71.9% accuracy, and k-means finds ten interpretable scent families.
 Ratings are hard to predict. The best model (histogram gradient boosting) explains 16.1% of rating variance.  
